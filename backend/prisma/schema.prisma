@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("USER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Zone {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  location    String?
+  devices     Device[]
+  alerts      Alert[]
+  createdAt   DateTime @default(now())
+}
+
+model Device {
+  id              String      @id @default(uuid())
+  deviceId        String      @unique // logical ID like device_01
+  name            String
+  status          String      @default("OFFLINE")
+  firmwareVersion String      @default("v1.0.0")
+  lastSeen        DateTime    @default(now())
+  zoneId          String
+  zone            Zone        @relation(fields: [zoneId], references: [id])
+  telemetry       Telemetry[]
+  alerts          Alert[]
+  otaUpdates      OTAUpdate[]
+  createdAt       DateTime    @default(now())
+}
+
+model Telemetry {
+  id              String   @id @default(uuid())
+  deviceId        String
+  device          Device   @relation(fields: [deviceId], references: [id])
+  temperature     Float
+  humidity        Float
+  leafWetness     Float
+  rainfall        Float
+  timestamp       DateTime @default(now())
+}
+
+model Alert {
+  id        String   @id @default(uuid())
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id])
+  zoneId    String
+  zone      Zone     @relation(fields: [zoneId], references: [id])
+  severity  String   // LOW, MODERATE, HIGH, CRITICAL
+  message   String
+  resolved  Boolean  @default(false)
+  timestamp DateTime @default(now())
+}
+
+model OTAUpdate {
+  id        String   @id @default(uuid())
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id])
+  version   String
+  status    String   // DOWNLOADING, DOWNLOADED, VERIFIED, UPDATING, UPDATED, FAILED
+  progress  Int      @default(0)
+  timestamp DateTime @default(now())
+}
+
+model FirmwareVersion {
+  id           String   @id @default(uuid())
+  version      String   @unique
+  url          String
+  releaseNotes String?
+  createdAt    DateTime @default(now())
+}
+
+model SecurityLog {
+  id          String   @id @default(uuid())
+  eventType   String   // AUTH_FAILURE, ROGUE_DEVICE, SUSPICIOUS_TELEMETRY
+  description String
+  severity    String   // LOW, INFO, WARN, CRITICAL
+  timestamp   DateTime @default(now())
+}

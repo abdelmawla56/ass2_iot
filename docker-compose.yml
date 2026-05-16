@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: iot_postgres
+    environment:
+      POSTGRES_USER: iot_user
+      POSTGRES_PASSWORD: iot_password
+      POSTGRES_DB: iot_crop_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: iot_mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+  backend:
+    build: ./backend
+    container_name: iot_backend
+    environment:
+      DATABASE_URL: "postgresql://iot_user:iot_password@postgres:5432/iot_crop_db?schema=public"
+      MQTT_BROKER_URL: "mqtt://mosquitto:1883"
+      JWT_SECRET: "your_ultra_secret_key_for_iot_platform"
+      PORT: 5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+      - mosquitto
+
+  frontend:
+    build: ./frontend
+    container_name: iot_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  simulator:
+    build: ./simulator
+    container_name: iot_simulator
+    environment:
+      MQTT_BROKER_HOST: "mosquitto"
+      MQTT_BROKER_PORT: 1883
+    depends_on:
+      - mosquitto
+
+volumes:
+  postgres_data:
