@@ -7,15 +7,13 @@ from datetime import datetime
 # ==========================================
 # ThingsBoard Simulator Configuration
 # ==========================================
-THINGSBOARD_HOST = "localhost" # or your VM IP
+THINGSBOARD_HOST = "eu.thingsboard.cloud"
 PORT = 1883
 
 # Add your ThingsBoard device access tokens here after creating them in the UI!
 # Format: {"device_name": "ACCESS_TOKEN"}
 DEVICE_TOKENS = {
-    "device_01": "PUT_TOKEN_HERE_1",
-    "device_02": "PUT_TOKEN_HERE_2",
-    # Add tokens for device_03 to device_10
+    "device_01": "BikC12xR0477qqqOhzwH",
 }
 
 class ThingsBoardSimulator:
