@@ -13,15 +13,19 @@ def automate_provisioning():
     
     # Prompt settings
     host = input("ThingsBoard Host (default: localhost): ").strip() or "localhost"
-    port = input("ThingsBoard Port (default: 8080): ").strip() or "8080"
+    
+    if host == "demo.thingsboard.io":
+        base_url = "https://demo.thingsboard.io"
+    else:
+        port = input("ThingsBoard Port (default: 8080): ").strip() or "8080"
+        base_url = f"http://{host}:{port}"
+
     username = input("Tenant Admin Username: ").strip()
     password = input("Tenant Admin Password: ").strip()
     
     if not username or not password:
         print("Error: Username and Password are required.")
         sys.exit(1)
-        
-    base_url = f"http://{host}:{port}"
     
     # 1. Login
     print("\n[1/3] Logging in to ThingsBoard...")
